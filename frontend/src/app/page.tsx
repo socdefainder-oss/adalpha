@@ -66,23 +66,23 @@ function dateTimePt(value: string) {
 
 function SectionCard({ title, children, className = "" }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <article className={`${panelStyle} p-6 ${className}`}>
-      <h3 className="mb-4 text-2xl font-bold">{title}</h3>
+    <article className={`${panelStyle} p-4 sm:p-6 ${className}`}>
+      <h3 className="mb-3 text-xl font-bold sm:mb-4 sm:text-2xl">{title}</h3>
       {children}
     </article>
   );
 }
 
 function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={`w-full rounded-lg border border-[color:var(--border)] px-3 py-2 ${props.className || ""}`} />;
+  return <input {...props} className={`min-h-11 w-full rounded-lg border border-[color:var(--border)] px-3 py-2 text-[15px] outline-none transition focus:border-[color:var(--brand)] ${props.className || ""}`} />;
 }
 
 function TextArea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea {...props} className={`w-full rounded-lg border border-[color:var(--border)] px-3 py-2 ${props.className || ""}`} />;
+  return <textarea {...props} className={`w-full rounded-lg border border-[color:var(--border)] px-3 py-2 text-[15px] outline-none transition focus:border-[color:var(--brand)] ${props.className || ""}`} />;
 }
 
 function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={`w-full rounded-lg border border-[color:var(--border)] px-3 py-2 ${props.className || ""}`} />;
+  return <select {...props} className={`min-h-11 w-full rounded-lg border border-[color:var(--border)] px-3 py-2 text-[15px] outline-none transition focus:border-[color:var(--brand)] ${props.className || ""}`} />;
 }
 
 export default function Home() {
@@ -232,17 +232,17 @@ export default function Home() {
 
   if (!token) {
     return (
-      <main className="mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center p-6">
+      <main className="mx-auto flex min-h-screen w-full max-w-6xl items-center justify-center p-3 sm:p-6">
         <section className={`${panelStyle} grid w-full max-w-4xl overflow-hidden md:grid-cols-[1.1fr_1fr]`}>
-          <div className="bg-gradient-to-br from-[#0b5f9e] to-[#0d79c2] p-10 text-white">
+          <div className="bg-gradient-to-br from-[#0b5f9e] to-[#0d79c2] p-6 text-white sm:p-10">
             <p className="text-sm uppercase tracking-[0.2em] text-cyan-100">APP Igreja</p>
-            <h1 className="mt-5 text-4xl font-bold">Gestão total da igreja em um único painel</h1>
-            <p className="mt-5 text-lg text-cyan-50">
+            <h1 className="mt-4 text-3xl font-bold sm:mt-5 sm:text-4xl">Gestão total da igreja em um único painel</h1>
+            <p className="mt-4 text-base text-cyan-50 sm:mt-5 sm:text-lg">
               Cadastros, departamentos, ensino, patrimônio, mídias, agenda e apoio operacional centralizados.
             </p>
           </div>
-          <form onSubmit={login} className="space-y-4 p-10">
-            <h2 className="text-3xl font-bold text-[color:var(--foreground)]">Entrar</h2>
+          <form onSubmit={login} className="space-y-4 p-5 sm:p-10">
+            <h2 className="text-2xl font-bold text-[color:var(--foreground)] sm:text-3xl">Entrar</h2>
             <p className="text-sm text-[color:var(--muted)]">Use o usuário seed inicial para começar.</p>
             <label className="block text-sm font-semibold">Email</label>
             <TextInput value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@appigreja.com" />
@@ -259,11 +259,11 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-5 md:px-7">
-      <header className="sticky top-0 z-20 mb-5 rounded-2xl border border-[#0a4a7b] bg-[#0b5f9e] px-4 py-3 text-white shadow-lg">
+    <main className="mx-auto min-h-screen w-full max-w-[1400px] px-3 py-3 pb-26 sm:px-4 sm:py-5 md:px-7 md:pb-8">
+      <header className="sticky top-0 z-20 mb-3 rounded-2xl border border-[#0a4a7b] bg-[#0b5f9e] px-3 py-3 text-white shadow-lg sm:mb-5 sm:px-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold">APP Igreja</h1>
+            <h1 className="text-xl font-bold sm:text-2xl">APP Igreja</h1>
             <p className="text-sm text-cyan-100">Bem-vindo, {userName} ({role})</p>
           </div>
           <button
@@ -279,20 +279,22 @@ export default function Home() {
         </div>
       </header>
 
-      <nav className="mb-5 flex flex-wrap gap-2">
-        {tabs.map((item) => (
-          <button
-            key={item}
-            onClick={() => setTab(item)}
-            className={`rounded-xl border px-3 py-2 text-sm font-semibold ${
-              tab === item
-                ? "border-[color:var(--brand)] bg-[color:var(--brand)] text-white"
-                : "border-[color:var(--border)] bg-[color:var(--panel-strong)] text-[color:var(--foreground)]"
-            }`}
-          >
-            {item}
-          </button>
-        ))}
+      <nav className="mb-4 rounded-2xl border border-[color:var(--border)] bg-[color:var(--panel-strong)] px-2 py-2 shadow-[0_8px_18px_rgba(41,64,86,0.06)]">
+        <div className="no-scrollbar flex gap-2 overflow-x-auto whitespace-nowrap px-1">
+          {tabs.map((item) => (
+            <button
+              key={item}
+              onClick={() => setTab(item)}
+              className={`rounded-xl border px-3 py-2 text-sm font-semibold ${
+                tab === item
+                  ? "border-[color:var(--brand)] bg-[color:var(--brand)] text-white"
+                  : "border-[color:var(--border)] bg-[color:var(--panel-strong)] text-[color:var(--foreground)]"
+              }`}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
       </nav>
 
       {error && <p className="mb-3 rounded-lg bg-red-50 p-3 text-red-700">{error}</p>}
