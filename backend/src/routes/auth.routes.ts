@@ -1,8 +1,8 @@
-import { Role } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
+import { createId, store } from "../lib/store";
 import { authRequired } from "../middlewares/auth";
-import { prisma } from "../lib/prisma";
+import { Role } from "../types/domain";
 import { comparePassword, hashPassword, signToken } from "../utils/auth";
 
 const router = Router();
@@ -18,25 +18,26 @@ router.post("/register", async (req, res, next) => {
 
     const data = schema.parse(req.body);
 
-    const existing = await prisma.user.findUnique({ where: { email: data.email } });
+    const existing = store.users.find((user) => user.email.toLowerCase() === data.email.toLowerCase());
     if (existing) {
       return res.status(409).json({ message: "Email ja cadastrado" });
     }
 
-    const usersCount = await prisma.user.count();
+    const usersCount = store.users.length;
     const role = usersCount === 0 ? Role.ADMIN : data.role || Role.SECRETARIA;
 
-    const user = await prisma.user.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        password: await hashPassword(data.password),
-        role,
-      },
-      select: { id: true, name: true, email: true, role: true },
-    });
+    const user = {
+      id: createId("usr"),
+      name: data.name,
+      email: data.email,
+      password: await hashPassword(data.password),
+      role,
+      createdAt: new Date().toISOString(),
+    };
 
-    return res.status(201).json(user);
+    store.users.push(user);
+
+    return res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (error) {
     return next(error);
   }
@@ -51,7 +52,7 @@ router.post("/login", async (req, res, next) => {
 
     const data = schema.parse(req.body);
 
-    const user = await prisma.user.findUnique({ where: { email: data.email } });
+    const user = store.users.find((entry) => entry.email.toLowerCase() === data.email.toLowerCase());
 
     if (!user) {
       return res.status(401).json({ message: "Credenciais invalidas" });
@@ -80,12 +81,13 @@ router.post("/login", async (req, res, next) => {
 });
 
 router.get("/me", authRequired, async (req, res) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.user!.sub },
-    select: { id: true, name: true, email: true, role: true },
-  });
+  const user = store.users.find((entry) => entry.id === req.user!.sub);
 
-  return res.json(user);
+  if (!user) {
+    return res.status(404).json({ message: "Usuario nao encontrado" });
+  }
+
+  return res.json({ id: user.id, name: user.name, email: user.email, role: user.role });
 });
 
 export default router;

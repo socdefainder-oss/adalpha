@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import { Role } from "@prisma/client";
 import jwt from "jsonwebtoken";
+import { Role } from "../types/domain";
 
 const jwtSecret = process.env.JWT_SECRET || "";
 

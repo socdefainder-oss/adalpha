@@ -1,13 +1,13 @@
-import { Role } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
+import { createId, store } from "../lib/store";
 import { roleRequired } from "../middlewares/auth";
-import { prisma } from "../lib/prisma";
+import { Role } from "../types/domain";
 
 const router = Router();
 
 router.get("/", async (_req, res) => {
-  const events = await prisma.event.findMany({ orderBy: { eventDate: "asc" } });
+  const events = [...store.events].sort((a, b) => a.eventDate.localeCompare(b.eventDate));
   return res.json(events);
 });
 
@@ -23,12 +23,19 @@ router.post("/", roleRequired(Role.ADMIN, Role.PASTOR, Role.SECRETARIA), async (
       })
       .parse(req.body);
 
-    const event = await prisma.event.create({
-      data: {
-        ...data,
-        eventDate: new Date(data.eventDate),
-      },
-    });
+    const now = new Date().toISOString();
+    const event = {
+      id: createId("evt"),
+      title: data.title,
+      description: data.description || null,
+      eventDate: data.eventDate,
+      location: data.location || null,
+      category: data.category,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    store.events.push(event);
 
     return res.status(201).json(event);
   } catch (error) {
@@ -38,7 +45,13 @@ router.post("/", roleRequired(Role.ADMIN, Role.PASTOR, Role.SECRETARIA), async (
 
 router.delete("/:id", roleRequired(Role.ADMIN, Role.PASTOR, Role.SECRETARIA), async (req, res) => {
   const params = z.object({ id: z.string() }).parse(req.params);
-  await prisma.event.delete({ where: { id: params.id } });
+  const eventIndex = store.events.findIndex((entry) => entry.id === params.id);
+
+  if (eventIndex < 0) {
+    return res.status(404).json({ message: "Evento nao encontrado" });
+  }
+
+  store.events.splice(eventIndex, 1);
   return res.status(204).send();
 });
 

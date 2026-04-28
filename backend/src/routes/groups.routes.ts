@@ -1,20 +1,13 @@
-import { Role } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
+import { createId, store } from "../lib/store";
 import { roleRequired } from "../middlewares/auth";
-import { prisma } from "../lib/prisma";
+import { Role } from "../types/domain";
 
 const router = Router();
 
 router.get("/", async (_req, res) => {
-  const groups = await prisma.group.findMany({
-    include: {
-      members: {
-        include: { member: true },
-      },
-    },
-    orderBy: { name: "asc" },
-  });
+  const groups = [...store.groups].sort((a, b) => a.name.localeCompare(b.name));
 
   return res.json(groups);
 });
@@ -32,7 +25,20 @@ router.post("/", roleRequired(Role.ADMIN, Role.PASTOR, Role.LIDER), async (req, 
       })
       .parse(req.body);
 
-    const group = await prisma.group.create({ data });
+    const now = new Date().toISOString();
+    const group = {
+      id: createId("grp"),
+      name: data.name,
+      category: data.category,
+      leaderName: data.leaderName || null,
+      meetingDay: data.meetingDay || null,
+      meetingTime: data.meetingTime || null,
+      active: data.active ?? true,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    store.groups.push(group);
     return res.status(201).json(group);
   } catch (error) {
     return next(error);
@@ -44,12 +50,14 @@ router.post("/:id/members", roleRequired(Role.ADMIN, Role.PASTOR, Role.LIDER), a
     const params = z.object({ id: z.string() }).parse(req.params);
     const data = z.object({ memberId: z.string() }).parse(req.body);
 
-    const relation = await prisma.groupMember.create({
-      data: {
-        groupId: params.id,
-        memberId: data.memberId,
-      },
-    });
+    const relation = {
+      id: createId("glk"),
+      groupId: params.id,
+      memberId: data.memberId,
+      joinedAt: new Date().toISOString(),
+    };
+
+    store.groupMembers.push(relation);
 
     return res.status(201).json(relation);
   } catch (error) {
@@ -69,15 +77,16 @@ router.post("/:id/attendance", roleRequired(Role.ADMIN, Role.PASTOR, Role.LIDER)
       })
       .parse(req.body);
 
-    const attendance = await prisma.attendance.create({
-      data: {
-        groupId: params.id,
-        meetingDate: new Date(data.meetingDate),
-        present: data.present,
-        visitors: data.visitors || 0,
-        notes: data.notes,
-      },
-    });
+    const attendance = {
+      id: createId("att"),
+      groupId: params.id,
+      meetingDate: data.meetingDate,
+      present: data.present,
+      visitors: data.visitors || 0,
+      notes: data.notes || null,
+    };
+
+    store.attendances.push(attendance);
 
     return res.status(201).json(attendance);
   } catch (error) {

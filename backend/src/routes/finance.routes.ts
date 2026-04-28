@@ -1,16 +1,15 @@
-import { Role } from "@prisma/client";
 import { Router } from "express";
 import { z } from "zod";
+import { createId, store } from "../lib/store";
 import { roleRequired } from "../middlewares/auth";
-import { prisma } from "../lib/prisma";
+import { Role, TransactionType } from "../types/domain";
 
 const router = Router();
 
 router.get("/transactions", async (_req, res) => {
-  const transactions = await prisma.transaction.findMany({
-    orderBy: { date: "desc" },
-    take: 100,
-  });
+  const transactions = [...store.transactions]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .slice(0, 100);
 
   return res.json(transactions);
 });
@@ -23,17 +22,25 @@ router.post("/transactions", roleRequired(Role.ADMIN, Role.PASTOR, Role.TESOUREI
         description: z.string().optional(),
         amount: z.number().positive(),
         date: z.string().datetime(),
-        type: z.enum(["ENTRADA", "SAIDA"]),
+        type: z.nativeEnum(TransactionType),
         category: z.string().min(2),
       })
       .parse(req.body);
 
-    const transaction = await prisma.transaction.create({
-      data: {
-        ...data,
-        date: new Date(data.date),
-      },
-    });
+    const now = new Date().toISOString();
+    const transaction = {
+      id: createId("trx"),
+      title: data.title,
+      description: data.description || null,
+      amount: data.amount,
+      date: data.date,
+      type: data.type,
+      category: data.category,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    store.transactions.push(transaction);
 
     return res.status(201).json(transaction);
   } catch (error) {
@@ -42,7 +49,7 @@ router.post("/transactions", roleRequired(Role.ADMIN, Role.PASTOR, Role.TESOUREI
 });
 
 router.get("/summary", async (_req, res) => {
-  const transactions = await prisma.transaction.findMany();
+  const transactions = store.transactions;
 
   const summary = transactions.reduce(
     (acc, t) => {

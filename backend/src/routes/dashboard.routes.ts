@@ -1,48 +1,27 @@
 import { Router } from "express";
-import { prisma } from "../lib/prisma";
+import { store } from "../lib/store";
 
 const router = Router();
 
 router.get("/overview", async (_req, res) => {
-  const [
-    totalMembers,
-    menCount,
-    womenCount,
-    recentMembers,
-    groups,
-    ministries,
-    events,
-    transactions,
-  ] = await Promise.all([
-    prisma.member.count(),
-    prisma.member.count({ where: { gender: { equals: "M", mode: "insensitive" } } }),
-    prisma.member.count({ where: { gender: { equals: "F", mode: "insensitive" } } }),
-    prisma.member.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 8,
-      select: { id: true, fullName: true, createdAt: true, status: true },
-    }),
-    prisma.group.findMany({
-      select: {
-        id: true,
-        name: true,
-        category: true,
-        active: true,
-        _count: { select: { members: true } },
-      },
-      orderBy: { name: "asc" },
-    }),
-    prisma.ministry.findMany({
-      select: {
-        id: true,
-        name: true,
-        _count: { select: { members: true } },
-      },
-      orderBy: { name: "asc" },
-    }),
-    prisma.event.findMany({ orderBy: { eventDate: "asc" }, take: 8 }),
-    prisma.transaction.findMany(),
-  ]);
+  const totalMembers = store.members.length;
+  const menCount = store.members.filter((member) => (member.gender || "").toUpperCase() === "M").length;
+  const womenCount = store.members.filter((member) => (member.gender || "").toUpperCase() === "F").length;
+
+  const recentMembers = [...store.members]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 8)
+    .map((member) => ({
+      id: member.id,
+      fullName: member.fullName,
+      createdAt: member.createdAt,
+      status: member.status,
+    }));
+
+  const groups = [...store.groups].sort((a, b) => a.name.localeCompare(b.name));
+  const ministries = [...store.ministries].sort((a, b) => a.name.localeCompare(b.name));
+  const events = [...store.events].sort((a, b) => a.eventDate.localeCompare(b.eventDate)).slice(0, 8);
+  const transactions = store.transactions;
 
   const income = transactions
     .filter((t) => t.type === "ENTRADA")
@@ -71,13 +50,13 @@ router.get("/overview", async (_req, res) => {
         id: group.id,
         name: group.name,
         category: group.category,
-        members: group._count.members,
+        members: store.groupMembers.filter((item) => item.groupId === group.id).length,
       })),
     },
     ministries: ministries.map((m) => ({
       id: m.id,
       name: m.name,
-      members: m._count.members,
+      members: store.ministryMembers.filter((item) => item.ministryId === m.id).length,
     })),
     finance: {
       income,

@@ -6,8 +6,7 @@ API REST para gestao completa da igreja.
 
 - Node.js + Express
 - TypeScript
-- Prisma ORM
-- PostgreSQL
+- Store em memoria (sem banco)
 - JWT para autenticacao
 
 ## Modulos
@@ -29,20 +28,7 @@ API REST para gestao completa da igreja.
 npm install
 ```
 
-3. Gere cliente prisma e aplique migrations:
-
-```bash
-npm run prisma:generate
-npx prisma migrate dev --name init
-```
-
-4. Rode o seed inicial:
-
-```bash
-npm run prisma:seed
-```
-
-5. Inicie em desenvolvimento:
+3. Inicie em desenvolvimento:
 
 ```bash
 npm run dev
@@ -55,12 +41,15 @@ Usuario seed:
 - email: `admin@appigreja.com`
 - senha: `admin123`
 
+Observacao:
+
+- Os dados sao mantidos em memoria. Ao reiniciar o servico, volta para os dados iniciais.
+
 ## Deploy no Render
 
-- Build Command: `npm install && npm run prisma:generate && npm run build`
-- Start Command: `npm run prisma:deploy && npm start`
+- Build Command: `npm install && npm run build`
+- Start Command: `npm start`
 - Environment:
-  - `DATABASE_URL`
   - `JWT_SECRET`
   - `PORT` (Render injeta automaticamente)
   - `CLIENT_URL` (URL do frontend Vercel)
