@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PASTOR
+  LIDER
+  TESOUREIRO
+  SECRETARIA
+}
+
+enum MemberStatus {
+  ATIVO
+  INATIVO
+  VISITANTE
+}
+
+enum TransactionType {
+  ENTRADA
+  SAIDA
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(SECRETARIA)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Member {
+  id            String           @id @default(cuid())
+  fullName      String
+  email         String?          @unique
+  phone         String?
+  gender        String?
+  birthDate     DateTime?
+  maritalStatus String?
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  status        MemberStatus     @default(ATIVO)
+  baptized      Boolean          @default(false)
+  convertedAt   DateTime?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  groups        GroupMember[]
+  ministries    MinistryMember[]
+}
+
+model Ministry {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  leaderId    String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  members     MinistryMember[]
+}
+
+model MinistryMember {
+  id         String   @id @default(cuid())
+  ministryId String
+  memberId   String
+  role       String?
+  joinedAt   DateTime @default(now())
+
+  ministry Ministry @relation(fields: [ministryId], references: [id], onDelete: Cascade)
+  member   Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([ministryId, memberId])
+}
+
+model Group {
+  id            String        @id @default(cuid())
+  name          String        @unique
+  category      String
+  leaderName    String?
+  meetingDay    String?
+  meetingTime   String?
+  active        Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  members       GroupMember[]
+  attendances   Attendance[]
+}
+
+model GroupMember {
+  id        String   @id @default(cuid())
+  groupId   String
+  memberId  String
+  joinedAt  DateTime @default(now())
+
+  group  Group  @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, memberId])
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  eventDate   DateTime
+  location    String?
+  category    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Attendance {
+  id          String   @id @default(cuid())
+  groupId     String
+  meetingDate DateTime
+  present     Int
+  visitors    Int      @default(0)
+  notes       String?
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  title       String
+  description String?
+  amount      Decimal         @db.Decimal(10, 2)
+  date        DateTime
+  type        TransactionType
+  category    String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}

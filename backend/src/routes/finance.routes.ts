@@ -1,0 +1,64 @@
+import { Role } from "@prisma/client";
+import { Router } from "express";
+import { z } from "zod";
+import { roleRequired } from "../middlewares/auth";
+import { prisma } from "../lib/prisma";
+
+const router = Router();
+
+router.get("/transactions", async (_req, res) => {
+  const transactions = await prisma.transaction.findMany({
+    orderBy: { date: "desc" },
+    take: 100,
+  });
+
+  return res.json(transactions);
+});
+
+router.post("/transactions", roleRequired(Role.ADMIN, Role.PASTOR, Role.TESOUREIRO), async (req, res, next) => {
+  try {
+    const data = z
+      .object({
+        title: z.string().min(2),
+        description: z.string().optional(),
+        amount: z.number().positive(),
+        date: z.string().datetime(),
+        type: z.enum(["ENTRADA", "SAIDA"]),
+        category: z.string().min(2),
+      })
+      .parse(req.body);
+
+    const transaction = await prisma.transaction.create({
+      data: {
+        ...data,
+        date: new Date(data.date),
+      },
+    });
+
+    return res.status(201).json(transaction);
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get("/summary", async (_req, res) => {
+  const transactions = await prisma.transaction.findMany();
+
+  const summary = transactions.reduce(
+    (acc, t) => {
+      const amount = Number(t.amount);
+      if (t.type === "ENTRADA") {
+        acc.income += amount;
+      } else {
+        acc.expense += amount;
+      }
+      acc.balance = acc.income - acc.expense;
+      return acc;
+    },
+    { income: 0, expense: 0, balance: 0 },
+  );
+
+  return res.json(summary);
+});
+
+export default router;
