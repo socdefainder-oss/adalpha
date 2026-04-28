@@ -50,11 +50,90 @@ export interface Transaction {
   category: string;
 }
 
+export interface KidProfile {
+  id: string;
+  fullName: string;
+  birthDate: string;
+  guardianName: string;
+  guardianPhone: string;
+  classroom: string;
+  allergies: string | null;
+  checkInAuthorized: boolean;
+  notes: string | null;
+}
+
+export interface Course {
+  id: string;
+  title: string;
+  category: string;
+  teacherName: string;
+  room: string | null;
+  workloadHours: number;
+  startDate: string;
+  endDate: string | null;
+  active: boolean;
+  material: string | null;
+  enrolledCount: number;
+}
+
+export interface Asset {
+  id: string;
+  itemName: string;
+  category: string;
+  location: string;
+  acquisitionDate: string;
+  acquisitionValue: number;
+  condition: string;
+  responsible: string | null;
+  serialNumber: string | null;
+  notes: string | null;
+}
+
+export interface MediaItem {
+  id: string;
+  title: string;
+  category: string;
+  platform: string;
+  publishDate: string;
+  responsible: string;
+  status: string;
+  url: string | null;
+  notes: string | null;
+}
+
+export interface HelpArticle {
+  id: string;
+  title: string;
+  category: string;
+  content: string;
+  contactEmail: string | null;
+  createdAt: string;
+}
+
+export interface HelpTicket {
+  id: string;
+  subject: string;
+  category: string;
+  message: string;
+  requesterName: string;
+  requesterEmail: string;
+  priority: string;
+  status: string;
+  createdAt: string;
+}
+
 export interface DashboardData {
   people: {
     total: number;
     men: number;
     women: number;
+  };
+  modules: {
+    kids: number;
+    courses: number;
+    assets: number;
+    media: number;
+    helpTickets: number;
   };
   recentMembers: Array<{
     id: string;

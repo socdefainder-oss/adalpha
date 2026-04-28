@@ -43,6 +43,13 @@ router.get("/overview", async (_req, res) => {
       men: menCount,
       women: womenCount,
     },
+    modules: {
+      kids: store.kids.length,
+      courses: store.courses.length,
+      assets: store.assets.length,
+      media: store.mediaItems.length,
+      helpTickets: store.helpTickets.filter((ticket) => ticket.status === "Aberto").length,
+    },
     recentMembers,
     groups: {
       stats: groupStats,

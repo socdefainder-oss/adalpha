@@ -1,9 +1,15 @@
 import { hashSync } from "bcryptjs";
 import {
   Attendance,
+  Asset,
+  Course,
   EventItem,
   Group,
   GroupMember,
+  HelpArticle,
+  HelpTicket,
+  KidProfile,
+  MediaItem,
   Member,
   MemberStatus,
   Ministry,
@@ -92,6 +98,86 @@ const conexaoJovem: Group = {
   updatedAt: createdAt,
 };
 
+const kidSamuel: KidProfile = {
+  id: uid("kid"),
+  fullName: "Samuel Costa",
+  birthDate: "2018-03-12",
+  guardianName: "Carlos Costa",
+  guardianPhone: "11999991111",
+  classroom: "Sala Jardim 2",
+  allergies: "Intolerancia a lactose",
+  checkInAuthorized: true,
+  notes: "Entregar apenas para os pais",
+  createdAt,
+  updatedAt: createdAt,
+};
+
+const cursoDiscipulado: Course = {
+  id: uid("crs"),
+  title: "Fundamentos da Fe",
+  category: "Discipulado",
+  teacherName: "Pr. Marcos",
+  room: "Sala 3",
+  workloadHours: 24,
+  startDate: new Date().toISOString(),
+  endDate: null,
+  active: true,
+  material: "Apostila do aluno",
+  enrolledCount: 18,
+  createdAt,
+  updatedAt: createdAt,
+};
+
+const assetProjetor: Asset = {
+  id: uid("ast"),
+  itemName: "Projetor Epson",
+  category: "Audio Visual",
+  location: "Templo Principal",
+  acquisitionDate: "2024-02-10",
+  acquisitionValue: 4200,
+  condition: "Bom",
+  responsible: "Equipe Midia",
+  serialNumber: "EP-23931-BR",
+  notes: "Usado nos cultos e eventos especiais",
+  createdAt,
+  updatedAt: createdAt,
+};
+
+const mediaCulto: MediaItem = {
+  id: uid("mid"),
+  title: "Culto de Domingo - Transmissao",
+  category: "Live",
+  platform: "YouTube",
+  publishDate: createdAt,
+  responsible: "Equipe Midia",
+  status: "Publicado",
+  url: "https://youtube.com/@igreja",
+  notes: "Gravar tambem cortes para redes sociais",
+  createdAt,
+  updatedAt: createdAt,
+};
+
+const helpArticle: HelpArticle = {
+  id: uid("hlp"),
+  title: "Como cadastrar novos membros",
+  category: "Cadastros",
+  content: "Acesse o menu Pessoas, preencha o formulario completo e confirme os dados de contato e status do membro.",
+  contactEmail: "suporte@igreja.local",
+  createdAt,
+};
+
+const helpTicket: HelpTicket = {
+  id: uid("tkt"),
+  subject: "Ajuste no acesso do lider de ministerio",
+  category: "Permissoes",
+  message: "Liberar acesso do lider ao cadastro de escalas e acompanhamento da equipe.",
+  requesterName: "Secretaria",
+  requesterEmail: "secretaria@igreja.local",
+  priority: "Media",
+  status: "Aberto",
+  createdAt,
+};
+
 export const store: {
   users: User[];
   members: Member[];
@@ -102,6 +188,12 @@ export const store: {
   attendances: Attendance[];
   events: EventItem[];
   transactions: Transaction[];
+  kids: KidProfile[];
+  courses: Course[];
+  assets: Asset[];
+  mediaItems: MediaItem[];
+  helpArticles: HelpArticle[];
+  helpTickets: HelpTicket[];
 } = {
   users: [adminUser],
   members: [memberAna, memberJoao],
@@ -161,6 +253,12 @@ export const store: {
       updatedAt: createdAt,
     },
   ],
+  kids: [kidSamuel],
+  courses: [cursoDiscipulado],
+  assets: [assetProjetor],
+  mediaItems: [mediaCulto],
+  helpArticles: [helpArticle],
+  helpTickets: [helpTicket],
 };
 
 export function createId(prefix: string) {
